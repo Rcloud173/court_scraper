@@ -1,101 +1,20 @@
-<!-- templates/index.html -->
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Delhi HC — Judgment Lookup</title>
-  <link rel="stylesheet" href="/static/style.css" />
+    <title>Delhi HC Judgment Fetcher</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Delhi HC — Judgment Lookup</h1>
-
-    <section class="card">
-      <h2>Search stored judgments</h2>
-      <form id="searchForm">
-        <label>Case Type (optional)
-          <select name="caseType">
-            <option value="">Any</option>
-            <option value="Civil">Civil</option>
-            <option value="Criminal">Criminal</option>
-          </select>
-        </label>
-
-        <label>Case Number
-          <input name="caseNumber" placeholder="e.g., CS(OS)123/2020" />
-        </label>
-
-        <label>Filing / Year (optional)
-          <input name="filingYear" placeholder="e.g., 2021" />
-        </label>
-
-        <button type="submit">Search</button>
-        <button type="button" id="refreshBtn">Fetch latest from Delhi HC</button>
-      </form>
-      <div id="message" role="status"></div>
-    </section>
-
-    <section class="card" id="results">
-      <h2>Results</h2>
-      <div id="output">No results yet.</div>
-    </section>
-  </div>
-
-  <script>
-    const form = document.getElementById('searchForm');
-    const message = document.getElementById('message');
-    const output = document.getElementById('output');
-    const refreshBtn = document.getElementById('refreshBtn');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      message.textContent = 'Searching...';
-      output.innerHTML = '';
-      const fd = new FormData(form);
-      const body = new URLSearchParams();
-      body.append('caseType', fd.get('caseType') || '');
-      body.append('caseNumber', fd.get('caseNumber') || '');
-      body.append('filingYear', fd.get('filingYear') || '');
-
-      try {
-        const res = await fetch('/search', { method: 'POST', body });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Search failed');
-        }
-        const data = await res.json();
-        message.textContent = '';
-        if (!data.length) {
-          output.innerHTML = '<p>No matches found in local DB. Try fetching latest.</p>';
-          return;
-        }
-        const rows = data.map(r => `
-          <div class="row">
-            <div><strong>Case:</strong> ${r.case_number}</div>
-            <div><strong>Judgment Date:</strong> ${r.judgment_date}</div>
-            <div><strong>Petitioner:</strong> ${r.petitioner || '-'}</div>
-            <div><strong>Respondent:</strong> ${r.respondent || '-'}</div>
-            <div>${r.pdf_url ? `<a href="/download/${r.id}" target="_blank">Download PDF</a>` : 'No PDF'}</div>
-          </div>
-        `).join('');
-        output.innerHTML = rows;
-      } catch (err) {
-        message.textContent = 'Error: ' + err.message;
-      }
-    });
-
-    refreshBtn.addEventListener('click', async () => {
-      if (!confirm('Fetch latest judgments from Delhi HC now? This may take a few seconds.')) return;
-      message.textContent = 'Fetching latest...';
-      try {
-        const res = await fetch('/fetch', { method: 'POST' });
-        const j = await res.json();
-        if (!res.ok) throw new Error(j.detail || 'Fetch failed');
-        message.textContent = `Inserted ${j.inserted} new judgments.`;
-      } catch (err) {
-        message.textContent = 'Error: ' + err.message;
-      }
-    });
-  </script>
+    <div class="container">
+        <h1>Delhi High Court Judgment Fetcher</h1>
+        
+        <div class="card">
+            <h2>Fetch Latest Judgments</h2>
+            <form method="post" action="/fetch">
+                <button type="submit">Fetch Latest Judgments</button>
+            </form>
+            <div id="message"></div>
+        </div>
+    </div>
 </body>
 </html>

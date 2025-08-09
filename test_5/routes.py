@@ -1,36 +1,23 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlite3 import connect, Row
 from pathlib import Path
-import sqlite3
-from scraper import fetch_latest_judgments
-import os
+from app.config import DB_PATH
+from app.scraper import fetch_latest_judgments
+from app.models import init_db
+import json
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=Path(__file__).parent/"static"), name="static")
 templates = Jinja2Templates(directory=Path(__file__).parent/"templates")
 
-from config import DB_PATH
-
-def init_db():
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS judgments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            case_no TEXT,
-            judgment_date TEXT,
-            petitioner TEXT,
-            respondent TEXT,
-            pdf_url TEXT,
-            timestamp TEXT,
-            UNIQUE(case_no, judgment_date)
-        )
-        """)
-
 @app.on_event("startup")
-def startup():
-    init_db()
+def initialize():
+    with connect(DB_PATH) as conn:
+        conn.row_factory = Row
+        init_db(conn)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -41,7 +28,8 @@ async def fetch_judgments(request: Request):
     try:
         judgments = fetch_latest_judgments()
         
-        with sqlite3.connect(DB_PATH) as conn:
+        with connect(DB_PATH) as conn:
+            conn.row_factory = Row
             cursor = conn.cursor()
             
             for judgment in judgments:
@@ -81,10 +69,6 @@ async def fetch_judgments(request: Request):
 
 @app.get("/download")
 async def download_pdf(url: str):
-    if not url or not url.startswith("https://delhihighcourt.nic.in"):
+    if not url or not url.startswith(BASE_URL):
         raise HTTPException(status_code=400, detail="Invalid PDF URL")
     return RedirectResponse(url)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

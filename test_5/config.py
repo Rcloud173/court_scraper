@@ -1,29 +1,10 @@
-# import sqlite3
+from pathlib import Path
+import os
 
-# # Connect to the database
-# conn = sqlite3.connect("judgments.db")
-
-# # Create a cursor
-# cursor = conn.cursor()
-
-# # Run the query
-# cursor.execute("SELECT COUNT(*) FROM judgments;")
-# result = cursor.fetchone()
-
-# # Print the result
-# print("Total judgments:", result[0])
-
-# # Clean up
-# conn.close()
-
-# config.py
-import pathlib
-
-# Project base directory
-BASE_DIR = pathlib.Path(__file__).resolve().parent
-
-# Database path
+BASE_DIR = Path(__file__).parent.resolve()
 DB_PATH = BASE_DIR / "database" / "judgments.db"
 
-# Ensure database folder exists
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+# Ensure directories exist
+os.makedirs(BASE_DIR / "database", exist_ok=True)
+os.makedirs(BASE_DIR / "static", exist_ok=True)
+os.makedirs(BASE_DIR / "templates", exist_ok=True)
