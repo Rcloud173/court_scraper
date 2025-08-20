@@ -1,4 +1,4 @@
-# Court Data Fetcher & Mini-Dashboard
+# Court Data Fetcher & web app
 
 ## 📌 Overview
 This is a FastAPI-based web application that fetches and displays **latest judgments** from the Delhi High Court public website.  
