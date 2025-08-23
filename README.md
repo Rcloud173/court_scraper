@@ -149,6 +149,6 @@ uvicorn main:app --reload
 ---
 
 ## 👤 Author
-- **Name:** Amir Shaikh 
+- **Name:** Amir_Shaikh (Rcloud173)
 - **Role:** Robotics + AI Enthusiast  
 - **Internship:** Court Data Fetcher & Mini-Dashboard
